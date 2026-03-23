@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Regie over Mijn Leren</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FFFDF8;
+    --card: #FFFFFF;
+    --text: #2D2D2D;
+    --muted: #6B7280;
+    --border: #E5E7EB;
+    --m1: #FF6B35;
+    --m1-light: #FFF0EB;
+    --m2: #7C3AED;
+    --m2-light: #F3EFFF;
+    --m3: #0891B2;
+    --m3-light: #EBF8FF;
+    --m4: #059669;
+    --m4-light: #ECFDF5;
+    --success: #22C55E;
+    --warning: #F59E0B;
+    --accent: #FFD166;
+    --radius: 16px;
+    --shadow: 0 4px 20px rgba(0,0,0,0.08);
+    --shadow-hover: 0 8px 30px rgba(0,0,0,0.14);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 18px;
+    line-height: 1.6;
+  }
+
+  /* ─── HEADER ─── */
+  .app-header {
+    background: #fff;
+    border-bottom: 2px solid var(--border);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .logo { font-size: 1.1rem; font-weight: 900; color: var(--m1); letter-spacing: -0.5px; }
+  .logo span { color: var(--text); }
+  .progress-bar-wrap { flex: 1; margin: 0 24px; }
+  .progress-bar-track { background: var(--border); border-radius: 99px; height: 8px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--m1), var(--m2), var(--m3), var(--m4)); transition: width 0.5s ease; }
+  .progress-label { font-size: 0.8rem; color: var(--muted); text-align: right; margin-top: 3px; font-weight: 700; }
+
+  /* ─── LANDING ─── */
+  #screen-landing {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 32px 20px;
+    text-align: center;
+    background: linear-gradient(160deg, #fff9f4 0%, #fff3e8 50%, #fffdf8 100%);
+  }
+  .landing-emoji { font-size: 4rem; margin-bottom: 16px; animation: bounce 2s infinite; }
+  @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+  .landing-title { font-size: 2.4rem; font-weight: 900; color: var(--text); margin-bottom: 12px; line-height: 1.2; }
+  .landing-title span { color: var(--m1); }
+  .landing-sub { font-size: 1.15rem; color: var(--muted); max-width: 500px; margin: 0 auto 32px; }
+  .module-preview-row { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-bottom: 36px; max-width: 600px; }
+  .module-chip { display: flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 99px; font-weight: 700; font-size: 0.95rem; }
+  .btn-primary {
+    background: var(--m1);
+    color: #fff;
+    border: none;
+    padding: 18px 40px;
+    border-radius: 99px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 900;
+    cursor: pointer;
+    box-shadow: 0 6px 24px rgba(255,107,53,0.35);
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(255,107,53,0.4); }
+  .landing-note { margin-top: 20px; font-size: 0.9rem; color: var(--muted); }
+
+  /* ─── MAIN CONTENT WRAPPER ─── */
+  #screen-main { display: none; padding: 24px 20px 100px; max-width: 780px; margin: 0 auto; }
+
+  /* ─── MODULE HEADER ─── */
+  .module-header {
+    display: flex; align-items: center; gap: 14px;
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 18px 22px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+    border-left: 6px solid var(--current-color, var(--m1));
+  }
+  .module-header-icon { font-size: 2rem; }
+  .module-header-text h2 { font-size: 1.3rem; font-weight: 900; }
+  .module-header-text p { color: var(--muted); font-size: 0.9rem; margin-top: 2px; }
+  .step-badge { margin-left: auto; background: var(--border); border-radius: 99px; padding: 4px 14px; font-size: 0.85rem; font-weight: 700; color: var(--muted); white-space: nowrap; }
+
+  /* ─── STEP DOTS ─── */
+  .step-dots { display: flex; gap: 6px; justify-content: center; margin-bottom: 18px; flex-wrap: wrap; }
+  .step-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--border);
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  .step-dot.active { background: var(--current-color, var(--m1)); width: 28px; border-radius: 5px; }
+  .step-dot.done { background: var(--current-color, var(--m1)); opacity: 0.4; }
+
+  /* ─── CARD ─── */
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 28px;
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+  }
+  .card-title { font-size: 1.5rem; font-weight: 900; margin-bottom: 12px; }
+  .card-subtitle { font-size: 1rem; color: var(--muted); margin-bottom: 16px; }
+  .card p { margin-bottom: 12px; }
+  .card p:last-child { margin-bottom: 0; }
+
+  /* ─── THEORY BOX ─── */
+  .theory-box {
+    background: #F8FAFC;
+    border-radius: 12px;
+    padding: 20px;
+    border-left: 4px solid var(--current-color, var(--m1));
+    margin-bottom: 20px;
+  }
+  .theory-box h3 { font-size: 1.1rem; font-weight: 800; margin-bottom: 8px; }
+
+  /* ─── TIP BOX ─── */
+  .tip-box {
+    background: var(--accent);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    font-weight: 700;
+    font-size: 0.95rem;
+  }
+  .tip-box::before { content: '💡 '; }
+
+  /* ─── EXAMPLE BOX ─── */
+  .example-box {
+    background: var(--m2-light);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin: 12px 0;
+    font-size: 0.95rem;
+    border-left: 3px solid var(--m2);
+  }
+
+  /* ─── PERSONA CARD ─── */
+  .persona-card {
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+    border: 2px solid var(--border);
+  }
+  .persona-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .persona-avatar { font-size: 2.2rem; background: var(--border); border-radius: 50%; width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .persona-name { font-weight: 900; font-size: 1.1rem; }
+  .persona-sub { font-size: 0.9rem; color: var(--muted); }
+  .persona-text { font-size: 0.95rem; }
+
+  /* ─── EXERCISE ─── */
+  .exercise-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+  .exercise-title::before { content: '✏️'; }
+
+  /* ─── CHOICE OPTIONS ─── */
+  .options-list { display: flex; flex-direction: column; gap: 10px; margin: 14px 0; }
+  .option-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 2px solid var(--border);
+    cursor: pointer;
+    transition: all 0.18s;
+    background: var(--card);
+    font-size: 0.98rem;
+  }
+  .option-item:hover { border-color: var(--current-color, var(--m1)); background: var(--m1-light); }
+  .option-item.selected { border-color: var(--current-color, var(--m1)); background: var(--m1-light); font-weight: 700; }
+  .option-item.correct { border-color: var(--success); background: #f0fdf4; }
+  .option-item.wrong { border-color: #EF4444; background: #fef2f2; }
+  .option-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+  .check-input { width: 20px; height: 20px; flex-shrink: 0; margin-top: 2px; accent-color: var(--m1); cursor: pointer; }
+
+  /* ─── SCALE SLIDER ─── */
+  .scale-wrap { margin: 14px 0; }
+  .scale-label { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--muted); margin-bottom: 6px; }
+  .scale-value { font-size: 2.5rem; font-weight: 900; text-align: center; color: var(--current-color, var(--m1)); margin-bottom: 4px; }
+  input[type=range] {
+    width: 100%; -webkit-appearance: none; height: 8px;
+    border-radius: 99px; background: var(--border); outline: none; cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 26px; height: 26px;
+    border-radius: 50%; background: var(--current-color, var(--m1));
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2); cursor: pointer;
+  }
+
+  /* ─── TEXTAREA ─── */
+  .text-input {
+    width: 100%; border: 2px solid var(--border); border-radius: 12px;
+    padding: 14px 16px; font-family: 'Nunito', sans-serif;
+    font-size: 1rem; resize: vertical; min-height: 90px; outline: none;
+    transition: border-color 0.2s;
+    background: var(--bg);
+  }
+  .text-input:focus { border-color: var(--current-color, var(--m1)); }
+  .text-input-label { font-weight: 700; font-size: 0.95rem; margin-bottom: 6px; display: block; }
+
+  /* ─── TAG CLOUD ─── */
+  .tag-cloud { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0; }
+  .tag-item {
+    padding: 8px 16px; border-radius: 99px; font-size: 0.9rem; font-weight: 700;
+    border: 2px solid var(--border); cursor: pointer; transition: all 0.18s;
+    background: var(--card);
+  }
+  .tag-item:hover { border-color: var(--current-color, var(--m1)); }
+  .tag-item.selected { background: var(--current-color, var(--m1)); color: #fff; border-color: var(--current-color, var(--m1)); }
+
+  /* ─── ENERGY TABLE ─── */
+  .energy-table { width: 100%; border-collapse: separate; border-spacing: 0 8px; margin: 14px 0; }
+  .energy-table th { text-align: center; font-size: 0.85rem; color: var(--muted); padding: 0 8px 8px; }
+  .energy-table th:first-child { text-align: left; }
+  .energy-table td { padding: 10px 8px; text-align: center; }
+  .energy-table td:first-child { font-weight: 600; text-align: left; background: var(--bg); border-radius: 8px 0 0 8px; padding-left: 14px; }
+  .energy-table tr td:last-child { border-radius: 0 8px 8px 0; }
+  .energy-radio { width: 20px; height: 20px; accent-color: var(--current-color, var(--m1)); cursor: pointer; }
+  .energy-row:nth-child(even) td:first-child { background: #f0f4f8; }
+
+  /* ─── INFO GRID ─── */
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 14px 0; }
+  .info-card {
+    padding: 16px; border-radius: 12px; border: 2px solid var(--border);
+    text-align: center;
+  }
+  .info-card-icon { font-size: 1.8rem; margin-bottom: 8px; }
+  .info-card-title { font-weight: 800; font-size: 0.95rem; }
+  .info-card-text { font-size: 0.85rem; color: var(--muted); margin-top: 4px; }
+
+  /* ─── TALENT GRID ─── */
+  .talent-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 14px 0; }
+  .talent-card {
+    padding: 18px; border-radius: 12px; border: 2px solid var(--border);
+    cursor: pointer; transition: all 0.2s;
+  }
+  .talent-card:hover { box-shadow: var(--shadow-hover); border-color: var(--current-color, var(--m1)); }
+  .talent-card.selected { border-color: var(--current-color, var(--m1)); background: var(--m1-light); }
+  .talent-card-icon { font-size: 1.6rem; margin-bottom: 8px; }
+  .talent-card-title { font-weight: 800; font-size: 0.95rem; }
+  .talent-card-desc { font-size: 0.82rem; color: var(--muted); margin-top: 4px; }
+
+  /* ─── FEEDBACK MESSAGE ─── */
+  .feedback { border-radius: 12px; padding: 16px 20px; margin-top: 14px; font-weight: 700; display: none; }
+  .feedback.correct { background: #f0fdf4; border: 2px solid var(--success); color: #166534; }
+  .feedback.wrong { background: #fef2f2; border: 2px solid #EF4444; color: #991B1B; }
+  .feedback.info { background: var(--m3-light); border: 2px solid var(--m3); color: #164E63; }
+  .feedback.show { display: block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+
+  /* ─── BUTTON ROW ─── */
+  .btn-row { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
+  .btn-check {
+    background: var(--current-color, var(--m1)); color: #fff;
+    border: none; padding: 14px 28px; border-radius: 99px;
+    font-family: 'Nunito', sans-serif; font-size: 1rem; font-weight: 800;
+    cursor: pointer; transition: all 0.2s;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  }
+  .btn-check:hover { transform: translateY(-1px); }
+  .btn-next {
+    background: var(--text); color: #fff;
+    border: none; padding: 14px 28px; border-radius: 99px;
+    font-family: 'Nunito', sans-serif; font-size: 1rem; font-weight: 800;
+    cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .btn-next:hover { background: #111; transform: translateY(-1px); }
+  .btn-back {
+    background: var(--border); color: var(--text);
+    border: none; padding: 14px 28px; border-radius: 99px;
+    font-family: 'Nunito', sans-serif; font-size: 1rem; font-weight: 700;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .btn-back:hover { background: #d1d5db; }
+
+  /* ─── DREMPEL LIST ─── */
+  .drempel-section { margin-bottom: 20px; }
+  .drempel-section-title { font-weight: 900; font-size: 1rem; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .drempel-grid { display: grid; gap: 8px; }
+  .drempel-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 12px 16px; border-radius: 10px; border: 2px solid var(--border);
+    cursor: pointer; transition: all 0.18s; font-size: 0.95rem;
+  }
+  .drempel-item:hover { border-color: var(--m2); }
+  .drempel-item.selected { border-color: var(--m2); background: var(--m2-light); font-weight: 700; }
+  .drempel-cb { flex-shrink: 0; margin-top: 2px; }
+
+  /* ─── MODEL CARD ─── */
+  .model-cards { display: flex; flex-direction: column; gap: 14px; margin: 14px 0; }
+  .model-card { border-radius: 14px; padding: 20px; border: 2px solid var(--border); }
+  .model-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .model-card-icon { font-size: 1.8rem; }
+  .model-card-title { font-weight: 900; font-size: 1.05rem; }
+  .model-card ul { padding-left: 20px; }
+  .model-card ul li { margin-bottom: 4px; font-size: 0.95rem; }
+
+  /* ─── MATCHING EXERCISE ─── */
+  .match-wrap { margin: 14px 0; }
+  .match-item { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; font-size: 0.95rem; }
+  .match-item label { flex: 1; background: var(--bg); padding: 10px 14px; border-radius: 10px; border: 2px solid var(--border); }
+  .match-select {
+    padding: 10px 14px; border-radius: 10px; border: 2px solid var(--border);
+    font-family: 'Nunito', sans-serif; font-size: 0.95rem; font-weight: 700;
+    cursor: pointer; outline: none; background: var(--card); min-width: 160px;
+  }
+  .match-select:focus { border-color: var(--m2); }
+  .match-item.correct .match-select { border-color: var(--success); background: #f0fdf4; }
+  .match-item.wrong .match-select { border-color: #EF4444; background: #fef2f2; }
+
+  /* ─── SCALE LIKERT ─── */
+  .likert-list { display: flex; flex-direction: column; gap: 14px; margin: 14px 0; }
+  .likert-item {}
+  .likert-statement { font-size: 0.95rem; margin-bottom: 6px; font-weight: 600; }
+  .likert-scale { display: flex; gap: 6px; }
+  .likert-btn {
+    flex: 1; padding: 8px; border-radius: 8px; border: 2px solid var(--border);
+    font-size: 0.85rem; font-weight: 700; cursor: pointer; text-align: center;
+    transition: all 0.18s; background: var(--card);
+  }
+  .likert-btn:hover { border-color: var(--m2); }
+  .likert-btn.active { background: var(--m2); color: #fff; border-color: var(--m2); }
+  .likert-nums { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
+
+  /* ─── STRATEGIE FORM ─── */
+  .strat-form { display: flex; flex-direction: column; gap: 16px; }
+  .strat-form-row {}
+  .strat-form-row label { font-weight: 800; font-size: 0.95rem; display: block; margin-bottom: 6px; }
+  .strat-select {
+    width: 100%; padding: 12px 16px; border-radius: 12px; border: 2px solid var(--border);
+    font-family: 'Nunito', sans-serif; font-size: 1rem; outline: none;
+    background: var(--bg); cursor: pointer;
+  }
+  .strat-select:focus { border-color: var(--m3); }
+
+  /* ─── POP CARD ─── */
+  .pop-section { border-radius: 14px; padding: 20px; border: 2px solid var(--border); margin-bottom: 16px; }
+  .pop-section-title { font-weight: 900; font-size: 1rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .pop-item { margin-bottom: 10px; }
+  .pop-item label { font-weight: 700; font-size: 0.9rem; color: var(--muted); display: block; margin-bottom: 4px; }
+  .pop-value { font-size: 1rem; }
+
+  /* ─── CELEBRATION ─── */
+  #screen-celebration {
+    display: none; flex-direction: column; align-items: center;
+    justify-content: center; min-height: 100vh;
+    padding: 32px 20px; text-align: center;
+    background: linear-gradient(160deg, #fff9f4 0%, #f0fdf4 100%);
+  }
+  .celebration-emoji { font-size: 5rem; margin-bottom: 16px; animation: spin 2s linear infinite; }
+  @keyframes spin { 0%{transform:rotate(0deg)} 50%{transform:rotate(10deg)} 100%{transform:rotate(0deg)} }
+  .celebration-title { font-size: 2.4rem; font-weight: 900; color: var(--m4); margin-bottom: 12px; }
+  .celebration-sub { font-size: 1.1rem; color: var(--muted); max-width: 480px; margin-bottom: 32px; }
+  .pop-summary {
+    background: var(--card); border-radius: var(--radius);
+    padding: 28px; box-shadow: var(--shadow);
+    max-width: 600px; width: 100%; text-align: left;
+    margin: 0 auto 28px;
+  }
+  .pop-summary h3 { font-size: 1.3rem; font-weight: 900; margin-bottom: 16px; color: var(--m4); }
+
+  /* ─── RESPONSIVE ─── */
+  @media(max-width: 640px) {
+    .landing-title { font-size: 1.8rem; }
+    .info-grid, .talent-grid { grid-template-columns: 1fr; }
+    .card { padding: 20px; }
+    .module-header { padding: 14px 16px; }
+    body { font-size: 16px; }
+    .energy-table th, .energy-table td { font-size: 0.8rem; padding: 6px 4px; }
+    .match-item { flex-direction: column; }
+    .match-select { width: 100%; }
+  }
+
+  /* ─── MODULE COLORS ─── */
+  .m1 { --current-color: var(--m1); --current-light: var(--m1-light); }
+  .m2 { --current-color: var(--m2); --current-light: var(--m2-light); }
+  .m3 { --current-color: var(--m3); --current-light: var(--m3-light); }
+  .m4 { --current-color: var(--m4); --current-light: var(--m4-light); }
+
+  .hidden { display: none !important; }
+
+  /* ─── GOOD/BAD COMPARISON ─── */
+  .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 14px 0; }
+  .compare-bad { background: #fef2f2; border: 2px solid #EF4444; border-radius: 12px; padding: 14px; }
+  .compare-good { background: #f0fdf4; border: 2px solid var(--success); border-radius: 12px; padding: 14px; }
+  .compare-label { font-size: 0.8rem; font-weight: 800; margin-bottom: 6px; }
+  .compare-bad .compare-label { color: #991b1b; }
+  .compare-good .compare-label { color: #166534; }
+  .compare-text { font-size: 0.9rem; }
+
+  /* ─── STAP BADGE ─── */
+  .stap-badge {
+    display: inline-block; background: var(--current-color, var(--m1)); color: #fff;
+    font-size: 0.75rem; font-weight: 800; padding: 3px 10px; border-radius: 99px;
+    margin-bottom: 8px; letter-spacing: 0.5px; text-transform: uppercase;
+  }
+
+  .divider { border: none; border-top: 2px solid var(--border); margin: 18px 0; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════ LANDING ═══ -->
+<div id="screen-landing">
+  <div class="landing-emoji">🧭</div>
+  <h1 class="landing-title">Regie over<br><span>Mijn Leren</span></h1>
+  <p class="landing-sub">Dit leerpad helpt jou om beter te begrijpen wie je bent als lerende, wat jou moeilijk maakt en hoe je daarmee omgaat.</p>
+  <div class="module-preview-row">
+    <div class="module-chip" style="background:var(--m1-light);color:var(--m1)">🧭 Mijn Kompas</div>
+    <div class="module-chip" style="background:var(--m2-light);color:var(--m2)">🧱 Mijn Drempels</div>
+    <div class="module-chip" style="background:var(--m3-light);color:var(--m3)">🛠️ Mijn Strategieën</div>
+    <div class="module-chip" style="background:var(--m4-light);color:var(--m4)">🌱 Mijn POP</div>
+  </div>
+  <button class="btn-primary" onclick="startLeerpad()">Ik begin! →</button>
+  <p class="landing-note">⏱ Dit leerpad duurt ongeveer 2 à 3 uur. Je kan op elk moment pauzeren.</p>
+</div>
+
+<!-- ═══════════════════════════════════════ HEADER ═══ -->
+<header class="app-header hidden" id="main-header">
+  <div class="logo">Regie <span>over Mijn Leren</span></div>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-track"><div class="progress-bar-fill" id="progress-fill" style="width:0%"></div></div>
+    <div class="progress-label" id="progress-label">Stap 0 / 0</div>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════ MAIN ═══ -->
+<div id="screen-main">
+  <div id="module-header-wrap"></div>
+  <div class="step-dots" id="step-dots"></div>
+  <div id="step-content"></div>
+  <div class="btn-row">
+    <button class="btn-back" id="btn-back" onclick="goBack()">← Terug</button>
+    <button class="btn-next" id="btn-next" onclick="goNext()">Volgende →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ CELEBRATION ═══ -->
+<div id="screen-celebration">
+  <div class="celebration-emoji">🎉</div>
+  <h2 class="celebration-title">Gefeliciteerd!</h2>
+  <p class="celebration-sub">Je hebt het volledige leerpad doorlopen. Hieronder zie je jouw Persoonlijk OntwikkelPlan (POP).</p>
+  <div class="pop-summary" id="pop-summary-content"></div>
+  <button class="btn-primary" style="background:var(--m4);box-shadow:0 6px 24px rgba(5,150,105,0.3)" onclick="window.print()">🖨️ Mijn POP afdrukken</button>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════
+const answers = {};
+let currentStepIndex = 0;
+
+// ═══════════════════════════════════════════════════
+// STEP DATA
+// Each step: { module, moduleTitle, moduleIcon, color, title, render() }
+// ═══════════════════════════════════════════════════
+const STEPS = [
+
+// ══════════════════════════ MODULE 1: MIJN KOMPAS ══════════════════
+{
+  module:1, moduleTitle:"Mijn Kompas", moduleIcon:"🧭", color:"m1",
+  title:"Welkom bij Module 1",
+  render: () => `
+    <div class="card">
+      <div class="stap-badge">Module 1 · Mijn Kompas</div>
+      <div class="card-title">Wat brengt jou in beweging? 🧭</div>
+      <p>In deze module ontdek je:</p>
+      <div class="info-grid" style="margin-top:14px">
+        <div class="info-card"><div class="info-card-icon">💪</div><div class="info-card-title">Jouw motivatie</div><div class="info-card-text">Waarom doe je deze opleiding?</div></div>
+        <div class="info-card"><div class="info-card-icon">⚡</div><div class="info-card-title">Jouw energie</div><div class="info-card-text">Wat geeft jou energie?</div></div>
+        <div class="info-card"><div class="info-card-icon">🎯</div><div class="info-card-title">Jouw interesses</div><div class="info-card-text">Waar ben je nieuwsgierig naar?</div></div>
+        <div class="info-card"><div class="info-card-icon">✨</div><div class="info-card-title">Jouw talenten</div><div class="info-card-text">Wat kan jij van nature goed?</div></div>
+      </div>
+      <div class="tip-box" style="margin-top:16px">Er zijn geen goede of foute antwoorden. Dit gaat over <em>jou</em>.</div>
+    </div>
+  `
+},
+
+{
+  module:1, moduleTitle:"Mijn Kompas", moduleIcon:"🧭", color:"m1",
+  title:"Wat is motivatie?",
+  render: () => `
+    <div class="card">
+      <div class="stap-badge">Motivatie · Theorie</div>
+      <div class="card-title">Wat is motivatie? 💪</div>
+      <div class="theory-box">
+        <h3>Motivatie = de reden waarom je iets doet</h3>
+        <p>Motivatie geeft je de <strong>wil om te starten</strong> en de <strong>kracht om door te gaan</strong>, ook als het moeilijk is.</p>
+        <p><strong>Voorbeeld:</strong> Je maakt je opdracht omdat je je diploma wil halen.</p>
+      </div>
+      <p><strong>Er zijn 2 soorten motivatie:</strong></p>
+      <div class="info-grid">
+        <div class="info-card" style="background:#EBF8FF;border-color:#0891B2">
+          <div class="info-card-icon">🔵</div>
+          <div class="info-card-title">Intrinsiek</div>
+          <div class="info-card-text">Je doet het <em>omdat je het zelf wil</em>.<br>Voorbeeld: je vindt het vak interessant.</div>
+        </div>
+        <div class="info-card" style="background:#FFF3E0;border-color:#FF8C42">
+          <div class="info-card-icon">🟠</div>
+          <div class="info-card-title">Extrinsiek</div>
+          <div class="info-card-text">Je doet het <em>voor een resultaat</em>.<br>Voorbeeld: je wil een diploma of job.</div>
+        </div>
+      </div>
+      <div class="tip-box">De beste situatie? Een combinatie van beide! Je wil je diploma (extrinsiek) én je vindt je vak interessant (intrinsiek).</div>
+
+      <hr class="divider">
+      <div class="exercise-title">Oefening: wat klopt?</div>
+      <p>Welke uitspraak over motivatie klopt?</p>
+      <div class="options-list" id="q-motivatie-quiz"></div>
+      <div class="feedback" id="fb-motivatie-quiz"></div>
+      <div class="btn-row"><button class="btn-check" onclick="checkMotivatie()">Nakijken</button></div>
+    </div>
+  `,
+  afterRender: () => {
+    const opts = [
+      { text:"Motivatie geeft je zin om te starten en vol te houden.", correct: true },
+      { text:"Motivatie zijn je talenten die je helpen te slagen.", correct: false },
+      { text:"Motivatie zorgt ervoor dat je nergens moeite voor hoeft te doen.", correct: false },
+      { text:"Motivatie houdt je tegen in je leerproces.", correct: false }
+    ];
+    renderRadio('q-motivatie-quiz', opts, 'mot-q');
+  }
+},
+
+{
+  module:1, moduleTitle:"Mijn Kompas", moduleIcon:"🧭", color:"m1",
+  title:"Mijn motivatie",
+  render: () => `
+    <div class="card">
+      <div class="stap-badge">Motivatie · Zelfreflectie</div>
+      <div class="card-title">Hoe gemotiveerd ben jij? 🎯</div>
+      <p>Geef jezelf een score op een schaal van 1 tot 10.</p>
+      <div class="scale-wrap">
+        <div class="scale-value" id="mot-score-display">${answers['mot-score']||5}</div>
+        <input type="range" min="1" max="10" value="${answers['mot-score']||5}" oninput="updateScale(this,'mot-score','mot-score-display')">
+        <div class="scale-label"><span>1 – Helemaal niet</span><span>10 – Heel erg</span></div>
+      </div>
+      <hr class="divider">
+      <div class="exercise-title">Wat motiveert jou? Kies alles wat past.</div>
+      <div class="tag-cloud" id="mot-reasons"></div>
+      <hr class="divider">
+      <label class="text-input-label">Mijn motivatie in mijn eigen woorden:</label>
+      <textarea class="text-input" id="mot-eigen" placeholder="Schrijf hier waarom jij deze opleiding doet..." oninput="saveText(this,'mot-eigen')">${answers['mot-eigen']||''}</textarea>
+    </div>
+  `,
+  afterRender: () => {
+    const items = [
+      "Ik wil een diploma","Voor werkzekerheid","Ik wil mijn toekomst verbeteren",
+      "Ik wil trots zijn op mezelf","Ik leer graag bij","Ik wil een voorbeeld zijn voor mijn kinderen",
+      "Ik wil onafhankelijk zijn","Iemand anders verwacht dit van mij","Het is verplicht (VDAB/traject)",
+      "Ik wil hoger loon","Ik hou van uitdagingen","Anders"
+    ];
+    renderTagCloud('mot-reasons', items, 'mot-reason-');
+  }
+},
+
+{
+  module:1, moduleTitle:"Mijn Kompas", moduleIcon:"🧭", color:"m1",
+  title:"Energie",
+  render: () => `
+    <div class="card">
+      <div class="stap-badge">Energie · Theorie + Oefening</div>
+      <div class="card-title">Wat geeft jou energie? ⚡</div>
+      <div class="theory-box">
+        <h3>Energie herkennen</h3>
+        <p>Je merkt dat iets energie geeft wanneer:</p>
+        <ul style="padding-left:20px;margin-top:8px">
+          <li>De tijd snel voorbijgaat</li>
+          <li>Je er zin in hebt om te starten</li>
+          <li>Je trots of tevreden bent achteraf</li>
+          <li>Je het graag opnieuw zou doen</li>
+        </ul>
+      </div>
+      <div class="tip-box">Weten wat je energie geeft helpt je keuzes te maken in je opleiding en toekomst.</div>
+      <hr class="divider">
+      <div class="exercise-title">Energiebarometer – Hoe zit het bij jou?</div>
+      <p style="font-size:0.9rem;color:var(--muted);margin-bottom:10px">Kies per activiteit: kost energie / neutraal / geeft energie</p>
+      <table class="energy-table">
+        <thead><tr>
+          <th>Activiteit</th>
+          <th>😓<br>Kost</th>
+          <th>😐<br>Neutraal</th>
+          <th>😊<br>Geeft</th>
+        </tr></thead>
+        <tbody id="energy-tbody"></tbody>
+      </table>
+      <hr class="divider">
+      <label class="text-input-label">📝 Geef 1 voorbeeld van iets dat jou energie kost:</label>
+      <textarea class="text-input" id="energy-kost" placeholder="Bijv: huiswerk maken terwijl de tv aanstaat..." oninput="saveText(this,'energy-kost')" style="min-height:60px">${answers['energy-kost']||''}</textarea>
+      <label class="text-input-label" style="margin-top:12px">📝 Geef 1 voorbeeld van iets dat jou energie geeft:</label>
+      <textarea class="text-input" id="energy-geeft" placeholder="Bijv: iemand helpen met een probleem..." oninput="saveText(this,'energy-geeft')" style="min-height:60px">${answers['energy-geeft']||''}</textarea>
+    </div>
+  `,
+  afterRender: () => {
+    const activiteiten = [
+      "Theorie lezen","Praktische oefeningen","Samenwerken","Zelfstandig werken",
+      "Problemen oplossen","Iets plannen","Presenteren","Iets uitleggen aan anderen",
+      "Nieuwe dingen leren","Herhalen en instuderen"
+    ];
+    const tbody = document.getElementById('energy-tbody');
+    activiteiten.forEach((act, i) => {
+      const saved = answers[`energy-${i}`] || '';
+      tbody.innerHTML += `<tr class="energy-row">
+        <td>${act}</td>
+        ${['kost','neutraal','geeft'].map(v => `<td><input type="radio" class="energy-radio" name="energy-${i}" value="${v}" ${saved===v?'checked':''} onchange="saveText({value:this.value},'energy-${i}')"></td>`).join('')}
+      </tr>`;
+    });
+  }
+},
+
+{
+  module:1, moduleTitle:"Mijn Kompas", moduleIcon:"🧭", color:"m1",
+  title:"Mijn interesses",
+  render: () => `
+    <div class="card">
+      <div class="stap-badge">Interesses · Theorie + Oefening</div>
+      <div class="card-title">Waar ben jij nieuwsgierig naar? 🎯</div>
+      <div class="theory-box">
+        <h3>Wat is een interesse?</h3>
+        <p>Een interesse is iets waar je van nature nieuwsgierig naar bent en waar je graag mee bezig bent. Een interesse betekent <strong>niet</strong> dat je er al goed in moet zijn.</p>
+        <p><strong>Voorbeeld:</strong> Je bent geïnteresseerd in gezondheid → je wil meer leren over verzorging of sport.</p>
+      </div>
+      <hr class="divider">
+      <div class="exercise-title">Welke interesses heb jij? Kies alles wat past.</div>
+      <div class="tag-cloud" id="interests-cloud"></div>
+      <hr class="divider">
+      <label class="text-input-label">Schrijf hier zelf 3 activiteiten die je graag doet (hobby, thuis, op school):</label>
+      <textarea class="text-input" id="interests-eigen" placeholder="Voorbeeld: koken – mensen helpen – met computers werken" oninput="saveText(this,'interests-eigen')">${answers['interests-eigen']||''}</textarea>
+    </div>
+  `,
+  afterRender: () => {
+    const items = [
+      "Werken met mensen / helpen","Praktisch werken met handen","Samenwerken",
+      "Iets plannen en organiseren","Creatief ontwerpen","Nieuwe ideeën bedenken",
+      "Werken met cijfers","Koken of voeding","Sport en beweging",
+      "Werken met computers","Problemen analyseren","Werken in de natuur",
+      "Administratie en structuur","Kinderen begeleiden","Verkopen of overtuigen",
+      "Dieren","Muziek","Rijden of techniek","Gezondheid en zorg"
+    ];
+    renderTagCloud('interests-cloud', items, 'int-');
+  }
+},
+
+{
+  module:1, moduleTitle:"Mijn Kompas", moduleIcon:"🧭", color:"m1",
+  title:"Mijn talenten",
+  render: () => `
+    <div class="card">
+      <div class="stap-badge">Talenten · Theorie + Oefening</div>
+      <div class="card-title">Wat zijn jouw talenten? ✨</div>
+      <div class="theory-box">
+        <h3>Wat is een talent?</h3>
+        <p>Een talent is iets wat je <strong>van nature goed kan</strong>, wat je <strong>energie geeft</strong> en wat je <strong>spontaan inzet</strong>.</p>
+        <p>Een talent komt tot uiting als je het bezit, je het laat zien in je gedrag, en de situatie er ruimte voor geeft.</p>
+      </div>
+      <p><strong>Er zijn 6 soorten talenten. Welke herken jij bij jezelf?</strong></p>
+      <div class="talent-grid" id="talent-grid"></div>
+      <hr class="divider">
+      <div class="exercise-title">Oefen: koppel het talent aan de casus</div>
+      <div class="persona-card">
+        <div class="persona-header">
+          <div class="persona-avatar">👩</div>
+          <div><div class="persona-name">Sarah (32)</div><div class="persona-sub">Volgt opleiding AAV + kinderbegeleider</div></div>
+        </div>
+        <div class="persona-text">Sarah helpt graag anderen. Ze brengt mensen samen en ondersteunt andere ouders in haar buurt. Ze organiseert graag dingen en zorgt graag voor mensen.</div>
+      </div>
+      <p><strong>Welk talenttype past het best bij Sarah?</strong></p>
+      <div class="options-list" id="sarah-talent-quiz"></div>
+      <div class="feedback" id="fb-sarah-talent"></div>
+      <div class="btn-row"><button class="btn-check" onclick="checkSarahTalent()">Nakijken</button></div>
+    </div>
+  `,
+  afterRender: () => {
+    const talenten = [
+      { icon:"🤝", title:"Sociale talenten", desc:"Je werkt goed met mensen, helpt en luistert graag.", key:"sociaal" },
+      { icon:"📋", title:"Organisatietalenten", desc:"Je plant goed, houdt overzicht en komt afspraken na.", key:"organisatie" },
+      { icon:"🧠", title:"Denktalenten", desc:"Je denkt na over hoe iets werkt, zoekt oplossingen.", key:"denk" },
+      { icon:"🎨", title:"Creatieve talenten", desc:"Je bedenkt nieuwe ideeën en denkt op een andere manier.", key:"creatief" },
+      { icon:"🔨", title:"Doetalenten", desc:"Je werkt graag met je handen, voert taken goed uit.", key:"doe" },
+      { icon:"🚀", title:"Zelfsturende talenten", desc:"Je gaat door ook als het moeilijk is, werkt zelfstandig.", key:"zelfsturend" }
+    ];
+    const grid = document.getElementById('talent-grid');
+    talenten.forEach(t => {
+      const sel = answers['talent-'+t.key] ? 'selected' : '';
+      grid.innerHTML += `<div class="talent-card ${sel}" onclick="toggleTalent('${t.key}',this)">
+        <div class="talent-card-icon">${t.icon}</div>
+        <div class="talent-card-title">${t.title}</div>
+        <div class="talent-card-desc">${t.desc}</div>
+      </div>`;
+    });
+    renderRadio('sarah-talent-quiz', [
+      { text:"Denktalenten – ze analyseert graag problemen", correct:false },
+      { text:"Sociale talenten – ze helpt mensen en brengt ze samen ✅", correct:true },
+      { text:"Doetalenten – ze werkt graag met haar handen", correct:false },
+      { text:"Organisatietalenten – ze houdt van structuur en planning", correct:false }
+    ], 'sarah-talent');
+  }
+},
+
+// ══════════════════════════ MODULE 2: MIJN DREMPELS ══════════════════
+{
+  module:2, moduleTitle:"Mijn Drempels", moduleIcon:"🧱", color:"m2",
+  title:"Welkom bij Module 2",
+  render: () => `
+    <div class="card">
+      <div class="stap-badge">Module 2 · Mijn Drempels</div>
+      <div class="card-title">Wat maakt het soms moeilijk? 🧱</div>
+      <p>Bijna iedereen heeft wel eens een periode dat het moeilijker loopt met studeren. Dat is normaal.</p>
+      <div class="theory-box">
+        <h3>Wat is een drempel?</h3>
+        <p>Een drempel is iets dat het moeilijker maakt om te starten, door te zetten of iets te leren.</p>
+        <p><strong>Belangrijk:</strong> Een drempel is <em>situationeel</em> – het hangt af van de omstandigheden. Het is geen tekort van jou als persoon.</p>
+      </div>
+      <div class="info-grid">
+        <div class="info-card" style="background:#fef2f2;border-color:#EF4444"><div class="info-card-icon">❌</div><div class="info-card-title">"Een drempel betekent dat ik het niet kan."</div></div>
+        <div class="info-card" style="background:#f0fdf4;border-color:var(--success)"><div class="info-card-icon">✅</div><div class="info-card-title">"Een drempel is tijdelijk en kan veranderen."</div></div>
+      </div>
+      <div class="tip-box">In deze module leer je welke drempels veel cursisten kennen – en hoe je ze kunt begrijpen.</div>
+    </div>
+  `
+},
+
+{
+  module:2, moduleTitle:"Mijn Drempels", moduleIcon:"🧱", color:"m2",
+  title:"Soorten drempels",
+  render: () => `
+    <div class="card">
+      <div class="stap-badge">Drempels herkennen</div>
+      <div class="card-title">Welke drempels ken jij? 🔍</div>
+      <p>Er zijn drie soorten drempels. Klik aan wat jij herkent.</p>
+      <div class="drempel-section">
+        <div class="drempel-section-title">👤 Persoonlijke drempels</div>
+        <div class="drempel-grid" id="drempels-persoonlijk"></div>
+      </div>
+      <div class="drempel-section">
+        <div class="drempel-section-title">🏠 Drempels thuis en in het leven</div>
+        <div class="drempel-grid" id="drempels-context"></div>
+      </div>
+      <div class="drempel-section">
+        <div class="drempel-section-title">🏫 Drempels in de opleiding</div>
+        <div class="drempel-grid" id="drempels-school"></div>
+      </div>
+    </div>
+  `,
+  afterRender: () => {
+    renderDrempels('drempels-persoonlijk', [
+      "Faalangst: ik blokkeer bij toetsen, ook al ken ik de stof","Uitstelgedrag: ik begin te laat",
+      "Moeite met plannen","Veel piekeren","Slaapproblemen: ik ben vaak moe",
+      "Ik voel me niet goed in de groep","Ik ben niet echt gemotiveerd voor sommige vakken",
+      "Perfectionisme: het is nooit goed genoeg","Laag zelfvertrouwen"
+    ], 'drempel-pers-');
+    renderDrempels('drempels-context', [
+      "Tijdsgebrek: werk, gezin én studie combineren","Financiële zorgen",
+      "Zorgtaken (kinderen, familie)","Geen rustige studieplek thuis",
+      "Spanningen thuis of in de relatie","Weinig steun van mensen rond mij"
+    ], 'drempel-ctx-');
+    renderDrempels('drempels-school', [
+      "Veel deadlines tegelijk","Onduidelijke opdrachten",
+      "Het tempo ligt te hoog","Moeilijk taalgebruik in de cursus",
+      "Het digitale leerplatform (Moodle) is moeilijk",
+      "Ik weet niet goed wat er van mij verwacht wordt"
+    ], 'drempel-sch-');
+  }
+},
+
+{
+  module:2, moduleTitle:"Mijn Drempels", moduleIcon:"🧱", color:"m2",
+  title:"Waarom heb ik drempels?",
+  render: () => `
+    <div class="card">
+      <div class="stap-badge">Verklaringen · Theorie + Oefening</div>
+      <div class="card-title">Waarom ervaar ik drempels? 🔎</div>
+      <p>Er zijn 3 verklaringen waarom drempels ontstaan:</p>
+      <div class="model-cards">
+        <div class="model-card" style="background:#FFF0EB;border-color:var(--m1)">
+          <div class="model-card-header"><div class="model-card-icon">😰</div><div class="model-card-title" style="color:var(--m1)">1. Het stressmodel</div></div>
+          <p style="font-size:0.95rem">Veel stress heeft invloed op je concentratie en geheugen. Je hersenen reageren met:</p>
+          <ul><li><strong>Vluchten:</strong> weggaan van het leermoment</li><li><strong>Vechten:</strong> boos worden op wie helpt</li><li><strong>Blokkeren:</strong> je staart naar de cursus maar er komt niets binnen</li></ul>
+        </div>
+        <div class="model-card" style="background:#FFF3E0;border-color:var(--warning)">
+          <div class="model-card-header"><div class="model-card-icon">⏰</div><div class="model-card-title" style="color:var(--warning)">2. Het schaarstemodel</div></div>
+          <p style="font-size:0.95rem">Te weinig tijd, geld, energie of rust in je hoofd leidt tot:</p>
+          <ul><li>Moeilijker plannen</li><li>Het gevoel altijd druk te zijn maar niets gedaan te krijgen</li><li>Geen energie om te starten</li></ul>
+        </div>
+        <div class="model-card" style="background:var(--m2-light);border-color:var(--m2)">
+          <div class="model-card-header"><div class="model-card-icon">🚪</div><div class="model-card-title" style="color:var(--m2)">3. Het uitsluitingsmodel</div></div>
+          <p style="font-size:0.95rem">Wie zich niet gezien of veilig voelt, zal:</p>
+          <ul><li>Minder vragen stellen</li><li>Sneller afhaken, ook al is de motivatie er</li><li>Zich minder thuis voelen in de klas of opleiding</li></ul>
+        </div>
+      </div>
+      <hr class="divider">
+      <div class="exercise-title">Oefening: koppel de drempel aan het juiste model</div>
+      <div class="match-wrap" id="model-match"></div>
+      <div class="feedback" id="fb-model-match"></div>
+      <div class="btn-row"><button class="btn-check" onclick="checkModelMatch()">Nakijken</button></div>
+    </div>
+  `,
+  afterRender: () => {
+    const items = [
+      { label:"Ik heb altijd tijd tekort.", answer:"schaarste" },
+      { label:"Ik blokkeer bij stress en deadlines.", answer:"stress" },
+      { label:"Ik durf niet spreken in de groep omdat ik me er niet goed voel.", answer:"uitsluiting" },
+      { label:"Ik ben altijd bezig maar het schiet niet op.", answer:"schaarste" },
+      { label:"Ik word snel boos wanneer iets moeilijk is.", answer:"stress" }
+    ];
+    const wrap = document.getElementById('model-match');
+    items.forEach((item, i) => {
+      const saved = answers[`model-match-${i}`]||'';
+      wrap.innerHTML += `<div class="match-item" id="match-row-${i}">
+        <label>${item.label}</label>
+        <select class="match-select" id="match-sel-${i}" onchange="answers['model-match-${i}']=this.value" >
+          <option value="" ${saved===''?'selected':''}>Kies...</option>
+          <option value="stress" ${saved==='stress'?'selected':''}>😰 Stress</option>
+          <option value="schaarste" ${saved==='schaarste'?'selected':''}>⏰ Schaarste</option>
+          <option value="uitsluiting" ${saved==='uitsluiting'?'selected':''}>🚪 Uitsluiting</option>
+        </select>
+      </div>`;
+    });
+    window._modelAnswers = items.map(i => i.answer);
+  }
+},
+
+{
+  module:2, moduleTitle:"Mijn Drempels", moduleIcon:"🧱", color:"m2",
+  title:"Mijn zelfbeeld",
+  render: () => `
+    <div class="card">
+      <div class="stap-badge">Zelfbeeld · Theorie + Oefening</div>
+      <div class="card-title">Hoe zie jij jezelf als lerende? 🪞</div>
+      <div class="theory-box">
+        <h3>Wat is een zelfbeeld?</h3>
+        <p>Je zelfbeeld is hoe jij jezelf ziet: wat je kan, wat je moeilijk vindt en of je gelooft dat je kan groeien.</p>
+        <p>Iemand met een <strong>positief zelfbeeld</strong> ziet een moeilijke taak als een uitdaging.</p>
+        <p>Iemand met een <strong>negatief zelfbeeld</strong> ziet dezelfde taak als een onoverkomelijk probleem.</p>
+      </div>
+      <div class="example-box">
+        <strong>Self-fulfilling prophecy:</strong><br>
+        Als je denkt "Ik kan dit toch niet" → je probeert minder → minder succes → en je denkt nog meer "zie je wel". Maar het omgekeerde werkt ook: succes versterkt vertrouwen!
+      </div>
+      <hr class="divider">
+      <div class="exercise-title">Hoe passend is dit voor jou? (1 = helemaal niet akkoord, 5 = helemaal akkoord)</div>
+      <div class="likert-list" id="zelfbeeld-likert"></div>
+    </div>
+  `,
+  afterRender: () => {
+    const items = [
+      "Ik geloof dat ik deze opleiding aankan.",
+      "Ik twijfel vaak aan mijn leervermogen.",
+      "Wanneer iets moeilijk is, denk ik snel dat ik het niet kan.",
+      "Als ik mijn best doe, maakt dat echt een verschil.",
+      "Ik durf fouten maken tijdens het leren – fouten horen erbij.",
+      "Ik zie mezelf als iemand die niet opgeeft.",
+      "Ik voel mij snel dom als ik iets niet begrijp.",
+      "Ik geloof dat mijn inzet verschil maakt."
+    ];
+    renderLikert('zelfbeeld-likert', items, 'zelfb-');
+  }
+},
+
+{
+  module:2, moduleTitle:"Mijn Drempels", moduleIcon:"🧱", color:"m2",
+  title:"Mijn referentiekader",
+  render: () => `
+    <div class="card">
+      <div class="stap-badge">Referentiekader · Theorie + Oefening</div>
+      <div class="card-title">De bril waardoor jij kijkt 👓</div>
+      <div class="theory-box">
+        <h3>Wat is een referentiekader?</h3>
+        <p>Je referentiekader is de "bril" waardoor jij de wereld ziet. Het zijn de overtuigingen, gewoonten en ervaringen die bepalen hoe jij situaties interpreteert.</p>
+        <p>Voorbeeld: iemand die geleerd heeft "vragen stellen is zwak" zal moeite hebben om hulp te vragen – ook al zou het helpen.</p>
+      </div>
+      <p><strong>Voorbeelden van overtuigingen die drempels creëren:</strong></p>
+      <div class="example-box">
+        "School is niet voor mensen zoals ik." → Minder betrokkenheid, minder vragen stellen.
+      </div>
+      <div class="example-box">
+        "Je moet problemen zelf oplossen." → Hulp vragen voelt ongemakkelijk.
+      </div>
+      <div class="example-box">
+        "Eerst voor anderen zorgen, dan voor jezelf." → Je hebt nooit tijd om te studeren.
+      </div>
+      <hr class="divider">
+      <div class="exercise-title">Hoe passend is dit voor jou? (1 = helemaal niet, 5 = helemaal wel)</div>
+      <div class="likert-list" id="refkader-likert"></div>
+      <hr class="divider">
+      <label class="text-input-label">Welke overtuiging herken jij het meest bij jezelf? Schrijf het hier:</label>
+      <textarea class="text-input" id="refkader-eigen" placeholder="Voorbeeld: Bij ons thuis werd studeren niet echt gestimuleerd..." oninput="saveText(this,'refkader-eigen')">${answers['refkader-eigen']||''}</textarea>
+    </div>
+  `,
+  afterRender: () => {
+    const items = [
+      "In mijn ervaring moet je iets meteen begrijpen, anders lukt het niet.",
+      "Ik ben opgegroeid met het idee dat school niet voor iedereen is.",
+      "Ik heb geleerd dat je problemen best zelf oplost.",
+      "Ik ben gewend om eerst voor anderen te zorgen en dan pas voor mezelf.",
+      "Hulp vragen voelt voor mij ongemakkelijk.",
+      "Ik denk dat fouten maken negatieve gevolgen heeft.",
+      "In mijn vorige schoolervaringen voelde ik mij niet gehoord.",
+      "Ik vind dat je sterk moet zijn en niet mag tonen dat iets moeilijk is."
+    ];
+    renderLikert('refkader-likert', items, 'refk-');
+  }
+},
+
+// ══════════════════════════ MODULE 3: MIJN STRATEGIEËN ══════════════════
+{
+  module:3, moduleTitle:"Mijn Strategieën", moduleIcon:"🛠️", color:"m3",
+  title:"Welkom bij Module 3",
+  render: () => `
+    <div class="card">
+      <div class="stap-badge">Module 3 · Mijn Strategieën</div>
+      <div class="card-title">Hoe ga jij om met je drempels? 🛠️</div>
+      <p>Nu je weet wat jouw drempels zijn, gaan we kijken wat je er mee kunt doen.</p>
+      <div class="theory-box">
+        <h3>Wat is een strategie?</h3>
+        <p>Een strategie is een <strong>bewuste keuze</strong> – een concrete actie die je neemt om met een drempel om te gaan.</p>
+        <ul style="padding-left:20px;margin-top:8px">
+          <li>Een strategie is <strong>actief</strong> – je doet iets.</li>
+          <li>Een strategie is <strong>gekozen</strong> – jij beslist.</li>
+          <li>Een strategie is <strong>evalueerbaar</strong> – je kan achteraf zien of het werkte.</li>
+        </ul>
+      </div>
+      <hr class="divider">
+      <div class="exercise-title">Snel check: wat is een strategie?</div>
+      <div class="options-list" id="q-strategie-def"></div>
+      <div class="feedback" id="fb-strategie-def"></div>
+      <div class="btn-row"><button class="btn-check" onclick="checkStratDef()">Nakijken</button></div>
+    </div>
+  `,
+  afterRender: () => {
+    renderRadio('q-strategie-def', [
+      { text:"Hopen dat het probleem vanzelf verdwijnt.", correct:false },
+      { text:"Een bewuste actie kiezen om met een drempel om te gaan. ✅", correct:true },
+      { text:"Wachten tot iemand anders het oplost.", correct:false },
+      { text:"Stoppen met de opleiding.", correct:false }
+    ], 'strat-def');
+  }
+},
+
+{
+  module:3, moduleTitle:"Mijn Strategieën", moduleIcon:"🛠️", color:"m3",
+  title:"Goede strategie criteria",
+  render: () => `
+    <div class="card">
+      <div class="stap-badge">Criteria voor een goede strategie</div>
+      <div class="card-title">Wanneer is een strategie goed? ✅</div>
+      <p>Een goede strategie is:</p>
+      <div class="info-grid" style="margin:14px 0">
+        <div class="info-card"><div class="info-card-icon">🎯</div><div class="info-card-title">Concreet</div><div class="info-card-text">Je weet exact wat je gaat doen.</div></div>
+        <div class="info-card"><div class="info-card-icon">🪜</div><div class="info-card-title">Klein genoeg</div><div class="info-card-text">De stap is niet te groot.</div></div>
+        <div class="info-card"><div class="info-card-icon">💚</div><div class="info-card-title">Haalbaar</div><div class="info-card-text">Het past bij jouw leven en situatie.</div></div>
+        <div class="info-card"><div class="info-card-icon">📅</div><div class="info-card-title">Gepland</div><div class="info-card-text">Je weet wanneer je start.</div></div>
+      </div>
+      <hr class="divider">
+      <div class="exercise-title">Goed of niet goed? Kijk mee.</div>
+      <div class="compare-grid">
+        <div class="compare-bad"><div class="compare-label">❌ NIET GOED</div><div class="compare-text">"Ik ga beter mijn best doen."</div></div>
+        <div class="compare-good"><div class="compare-label">✅ WEL GOED</div><div class="compare-text">"Ik maak elke zondag om 20u een planning van 30 minuten."</div></div>
+      </div>
+      <div class="compare-grid">
+        <div class="compare-bad"><div class="compare-label">❌ NIET GOED</div><div class="compare-text">"Ik werk dit weekend alles bij."</div></div>
+        <div class="compare-good"><div class="compare-label">✅ WEL GOED</div><div class="compare-text">"Ik werk zaterdag 1 hoofdstuk af."</div></div>
+      </div>
+      <div class="compare-grid">
+        <div class="compare-bad"><div class="compare-label">❌ NIET GOED</div><div class="compare-text">"Binnenkort begin ik."</div></div>
+        <div class="compare-good"><div class="compare-label">✅ WEL GOED</div><div class="compare-text">"Ik begin dinsdag om 19u."</div></div>
+      </div>
+      <hr class="divider">
+      <div class="exercise-title">Kies de beste strategie voor uitstelgedrag:</div>
+      <div class="options-list" id="q-uittel-strat"></div>
+      <div class="feedback" id="fb-uitstel-strat"></div>
+      <div class="btn-row"><button class="btn-check" onclick="checkUitstel()">Nakijken</button></div>
+    </div>
+  `,
+  afterRender: () => {
+    renderRadio('q-uittel-strat', [
+      { text:"Nog langer wachten en hopen dat je zin krijgt.", correct:false },
+      { text:"Beginnen met slechts 10 minuten werken en dan kijken hoe het gaat. ✅", correct:true },
+      { text:"Alles tegelijk doen om achterstand in te halen.", correct:false },
+      { text:"Stoppen met de opleiding.", correct:false }
+    ], 'uitstel-s');
+  }
+},
+
+{
+  module:3, moduleTitle:"Mijn Strategieën", moduleIcon:"🛠️", color:"m3",
+  title:"Strategieën per drempel",
+  render: () => `
+    <div class="card">
+      <div class="stap-badge">Welke strategie past bij mij?</div>
+      <div class="card-title">Strategieën voor veelvoorkomende drempels 💡</div>
+      <p>Hieronder vind je strategieën per type drempel. <strong>Klik de strategieën aan die jij zou willen proberen.</strong></p>
+
+      <div class="drempel-section">
+        <div class="drempel-section-title">⏰ Bij tijdsgebrek</div>
+        <div class="drempel-grid" id="strat-tijd"></div>
+      </div>
+      <div class="drempel-section">
+        <div class="drempel-section-title">😮‍💨 Bij uitstelgedrag</div>
+        <div class="drempel-grid" id="strat-uitstel"></div>
+      </div>
+      <div class="drempel-section">
+        <div class="drempel-section-title">😟 Bij faalangst</div>
+        <div class="drempel-grid" id="strat-faalangst"></div>
+      </div>
+      <div class="drempel-section">
+        <div class="drempel-section-title">🌀 Bij gebrek aan overzicht</div>
+        <div class="drempel-grid" id="strat-overzicht"></div>
+      </div>
+      <div class="drempel-section">
+        <div class="drempel-section-title">💻 Bij digitale drempels</div>
+        <div class="drempel-grid" id="strat-digitaal"></div>
+      </div>
+      <div class="drempel-section">
+        <div class="drempel-section-title">💔 Bij laag zelfvertrouwen</div>
+        <div class="drempel-grid" id="strat-zelfvertr"></div>
+      </div>
+      <div class="drempel-section">
+        <div class="drempel-section-title">😴 Bij stress of piekeren</div>
+        <div class="drempel-grid" id="strat-stress"></div>
+      </div>
+    </div>
+  `,
+  afterRender: () => {
+    renderDrempels('strat-tijd', [
+      "Weekplanning maken elke zondag","Taken opdelen in kleine stappen",
+      "Prioriteiten bepalen: wat moet echt?","Vaste studiemomenten inplannen","Hulp vragen aan partner of familie"
+    ], 'strat-tijd-');
+    renderDrempels('strat-uitstel', [
+      "Beginnen met de 10-minutenregel: gewoon 10 minuten starten","Taak verkleinen tot 1 kleine stap",
+      "Timer gebruiken (bijv. 25 min werken, 5 min pauze)","Studeerbuddy inschakelen","Beloning inplannen na de taak"
+    ], 'strat-uitstel-');
+    renderDrempels('strat-faalangst', [
+      "Oefentoetsen maken om te wennen aan toetssituaties","Hulp of feedback vragen vóór de toets",
+      "Realistische doelen stellen (niet perfect, wel goed genoeg)","Successen bijhouden in een notitieboekje",
+      "Met leerkracht of coach praten over je faalangst"
+    ], 'strat-faal-');
+    renderDrempels('strat-overzicht', [
+      "Takenlijst maken en afvinken","Deadlines visueel plannen op een kalender",
+      "Één platform gebruiken (Moodle) en niets anders","Meldingen instellen op gsm voor deadlines"
+    ], 'strat-ovz-');
+    renderDrempels('strat-digitaal', [
+      "Korte instructievideo bekijken op YouTube","Hulp vragen aan docent of medecursist",
+      "Stap-voor-stap handleiding gebruiken","Oefenen in een rustige situatie","OLC bezoeken voor digitale hulp"
+    ], 'strat-dig-');
+    renderDrempels('strat-zelfvertr', [
+      "Eerdere successen oplijsten","Kleine, haalbare doelen stellen",
+      "Positieve feedback actief bewaren","Negatieve gedachten opschrijven en uitdagen",
+      "Talenteninterview doen met iemand die je goed kent"
+    ], 'strat-zv-');
+    renderDrempels('strat-stress', [
+      "10 minuten 'piekertijd' plannen en dan stoppen","Zorgen opschrijven voor je studeert",
+      "Ademhalingsoefening doen","Taken opdelen in kleine stukken","Ontspanning inbouwen: wandelen, muziek"
+    ], 'strat-str-');
+  }
+},
+
+{
+  module:3, moduleTitle:"Mijn Strategieën", moduleIcon:"🛠️", color:"m3",
+  title:"Mijn strategie uitwerken",
+  render: () => `
+    <div class="card">
+      <div class="stap-badge">Jouw strategie plannen</div>
+      <div class="card-title">Werk jouw strategie concreet uit 📝</div>
+      <p>Kies één drempel waar je mee aan de slag wil. Maak je strategie zo concreet mogelijk.</p>
+      <div class="strat-form">
+        <div class="strat-form-row">
+          <label>1. Welke drempel kies je om aan te werken?</label>
+          <select class="strat-select" id="pop-drempel" onchange="saveText({value:this.options[this.selectedIndex].text},'pop-drempel')">
+            <option value="">Kies een drempel...</option>
+            <option>Uitstelgedrag</option><option>Tijdsgebrek</option><option>Faalangst</option>
+            <option>Gebrek aan overzicht</option><option>Laag zelfvertrouwen</option>
+            <option>Piekeren of stress</option><option>Digitale drempels</option>
+            <option>Geen rustige studieplek</option><option>Weinig motivatie voor een vak</option>
+          </select>
+        </div>
+        <div class="strat-form-row">
+          <label>2. In welke situatie of welk vak merk je dit het meest?</label>
+          <textarea class="text-input" id="pop-situatie" placeholder="Bijv: bij wiskunde als er een deadline nadert..." oninput="saveText(this,'pop-situatie')" style="min-height:60px">${answers['pop-situatie']||''}</textarea>
+        </div>
+        <div class="strat-form-row">
+          <label>3. Welke strategie kies je? Maak hem concreet.</label>
+          <textarea class="text-input" id="pop-strat1" placeholder="Bijv: Ik maak elke zondag om 20u een planning van 30 minuten voor de komende week." oninput="saveText(this,'pop-strat1')">${answers['pop-strat1']||''}</textarea>
+        </div>
+        <div class="strat-form-row">
+          <label>4. Wanneer begin je?</label>
+          <textarea class="text-input" id="pop-startdatum" placeholder="Bijv: Deze zondag, 20u." oninput="saveText(this,'pop-startdatum')" style="min-height:50px">${answers['pop-startdatum']||''}</textarea>
+        </div>
+        <div class="strat-form-row">
+          <label>5. Hoe haalbaar schat je dit in? (1 = heel moeilijk, 10 = heel makkelijk)</label>
+          <div class="scale-wrap">
+            <div class="scale-value" id="haalbaar-display">${answers['pop-haalbaar']||6}</div>
+            <input type="range" min="1" max="10" value="${answers['pop-haalbaar']||6}" oninput="updateScale(this,'pop-haalbaar','haalbaar-display')">
+            <div class="scale-label"><span>1 – Heel moeilijk</span><span>10 – Heel makkelijk</span></div>
+          </div>
+        </div>
+        <div class="strat-form-row">
+          <label>6. Wanneer ga je evalueren of het gewerkt heeft?</label>
+          <textarea class="text-input" id="pop-eval" placeholder="Bijv: Na 2 weken kijk ik of ik minder uitstel." oninput="saveText(this,'pop-eval')" style="min-height:50px">${answers['pop-eval']||''}</textarea>
+        </div>
+        <div class="strat-form-row">
+          <label>7. Wie of wat kan jou helpen? (hulpbronnen)</label>
+          <div class="tag-cloud" id="hulpbronnen-cloud"></div>
+        </div>
+      </div>
+    </div>
+  `,
+  afterRender: () => {
+    renderTagCloud('hulpbronnen-cloud', [
+      "Klasgenoot / studeerbuddy","Leerkracht","Leertrajectcoach (LTC)","Open Leercentrum (OLC)",
+      "Partner of familie","Zorgteam centrum","Planning of agenda","Herinnering in gsm","Andere"
+    ], 'hulp-');
+  }
+},
+
+// ══════════════════════════ MODULE 4: MIJN POP ══════════════════
+{
+  module:4, moduleTitle:"Mijn POP", moduleIcon:"🌱", color:"m4",
+  title:"Wat is een POP?",
+  render: () => `
+    <div class="card">
+      <div class="stap-badge">Module 4 · Mijn POP</div>
+      <div class="card-title">Jouw Persoonlijk OntwikkelPlan 🌱</div>
+      <div class="theory-box">
+        <h3>Wat is een POP?</h3>
+        <p>Een <strong>Persoonlijk OntwikkelPlan (POP)</strong> is een document waarin jij noteert:</p>
+        <ul style="padding-left:20px;margin-top:8px">
+          <li>Wie jij bent als lerende (talenten, energie, interesses)</li>
+          <li>Welke drempels jij ervaart</li>
+          <li>Welke strategieën jij kiest</li>
+          <li>Hoe je dit opvolgt en evalueert</li>
+        </ul>
+      </div>
+      <p>Het ijsbergmodel helpt je begrijpen wat zichtbaar is en wat eronder zit:</p>
+      <div style="background:var(--m4-light);border-radius:14px;padding:20px;border:2px solid var(--m4);margin:14px 0">
+        <div style="text-align:center;font-weight:800;color:var(--m4);margin-bottom:12px">🧊 Het IJsbergmodel</div>
+        <div style="background:#e0f2fe;border-radius:10px;padding:14px;margin-bottom:8px">
+          <strong>Boven het water:</strong> wat anderen kunnen zien<br>
+          <span style="color:var(--muted);font-size:0.9rem">→ je gedrag, je strategieën, je acties</span>
+        </div>
+        <div style="background:#fff;border-radius:10px;padding:14px">
+          <strong>Onder het water:</strong> de diepere laag<br>
+          <span style="color:var(--muted);font-size:0.9rem">→ je talenten, motivaties, zelfbeeld, referentiekader</span>
+        </div>
+      </div>
+      <div class="tip-box">Je POP is van jou. Het helpt jou om beter te begrijpen wie je bent en hoe je kan groeien.</div>
+    </div>
+  `
+},
+
+{
+  module:4, moduleTitle:"Mijn POP", moduleIcon:"🌱", color:"m4",
+  title:"Mijn POP invullen",
+  render: () => `
+    <div class="card">
+      <div class="stap-badge">Jouw POP samenstellen</div>
+      <div class="card-title">Jouw Persoonlijk OntwikkelPlan 📄</div>
+      <p>Vul hieronder jouw POP in. Gebruik wat je geleerd en ontdekt hebt in dit leerpad.</p>
+
+      <div class="pop-section">
+        <div class="pop-section-title">⚡ Mijn energiegevers & interesses</div>
+        <label class="text-input-label">Wat geeft mij energie in de opleiding?</label>
+        <textarea class="text-input" id="final-energie" placeholder="Bijv: samenwerken met anderen, praktische oefeningen..." oninput="saveText(this,'final-energie')" style="min-height:60px">${answers['final-energie']||''}</textarea>
+        <label class="text-input-label" style="margin-top:10px">Mijn 3 grootste interesses:</label>
+        <textarea class="text-input" id="final-interesses" placeholder="Bijv: mensen helpen, koken, computers..." oninput="saveText(this,'final-interesses')" style="min-height:50px">${answers['final-interesses']||''}</textarea>
+      </div>
+
+      <div class="pop-section">
+        <div class="pop-section-title">✨ Mijn talenten</div>
+        <label class="text-input-label">Welke talenten heb ik herkend bij mezelf?</label>
+        <textarea class="text-input" id="final-talenten" placeholder="Bijv: sociale talenten – ik help graag mensen en breng ze samen..." oninput="saveText(this,'final-talenten')">${answers['final-talenten']||''}</textarea>
+      </div>
+
+      <div class="pop-section">
+        <div class="pop-section-title">💪 Mijn motivatie</div>
+        <label class="text-input-label">Waarom doe ik deze opleiding?</label>
+        <textarea class="text-input" id="final-motivatie" placeholder="Bijv: Ik wil mijn diploma halen zodat ik later in de zorg kan werken..." oninput="saveText(this,'final-motivatie')">${answers['final-motivatie']||answers['mot-eigen']||''}</textarea>
+      </div>
+
+      <div class="pop-section">
+        <div class="pop-section-title">🧱 Mijn drempel en strategie</div>
+        <label class="text-input-label">Mijn drempel:</label>
+        <textarea class="text-input" id="final-drempel" placeholder="Bijv: Uitstelgedrag bij wiskunde wanneer deadlines naderen..." oninput="saveText(this,'final-drempel')" style="min-height:50px">${answers['final-drempel']||answers['pop-situatie']||''}</textarea>
+        <label class="text-input-label" style="margin-top:10px">Mijn strategie (concreet):</label>
+        <textarea class="text-input" id="final-strat" placeholder="Bijv: Ik begin elke dinsdag om 19u met 10 minuten wiskunde, zonder gsm." oninput="saveText(this,'final-strat')">${answers['final-strat']||answers['pop-strat1']||''}</textarea>
+        <label class="text-input-label" style="margin-top:10px">Ik start op / Ik evalueer op:</label>
+        <textarea class="text-input" id="final-timing" placeholder="Start: deze week / Evaluatie: over 2 weken" oninput="saveText(this,'final-timing')" style="min-height:50px">${answers['final-timing']||''}</textarea>
+      </div>
+
+      <div class="pop-section">
+        <div class="pop-section-title">🌟 Wat ik al van mezelf weet</div>
+        <label class="text-input-label">Iets positiefs dat ik over mezelf geleerd heb in dit leerpad:</label>
+        <textarea class="text-input" id="final-positief" placeholder="Bijv: Ik wist niet dat ik sociale talenten had, maar dat klopt wel..." oninput="saveText(this,'final-positief')">${answers['final-positief']||''}</textarea>
+      </div>
+    </div>
+  `
+},
+
+{
+  module:4, moduleTitle:"Mijn POP", moduleIcon:"🌱", color:"m4",
+  title:"Klaar!",
+  render: () => `
+    <div class="card" style="text-align:center;padding:36px 28px">
+      <div style="font-size:3.5rem;margin-bottom:16px">🎉</div>
+      <div class="card-title">Je bent er bijna!</div>
+      <p>Klik op <strong>Volgende</strong> om jouw Persoonlijk OntwikkelPlan te bekijken en op te slaan.</p>
+      <div class="tip-box" style="text-align:left;margin-top:20px">Goed gedaan! Je hebt alle modules doorlopen. Dat is een grote stap.</div>
+    </div>
+  `
+}
+
+]; // end STEPS
+
+// ═══════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════
+function renderRadio(containerId, opts, name) {
+  const c = document.getElementById(containerId);
+  if(!c) return;
+  c.innerHTML = '';
+  opts.forEach((opt, i) => {
+    c.innerHTML += `<div class="option-item" id="${name}-opt-${i}" onclick="selectRadio('${name}',${i},${opt.correct})">
+      <div class="option-icon">○</div>
+      <div>${opt.text}</div>
+    </div>`;
+  });
+}
+
+function selectRadio(name, idx, isCorrect) {
+  document.querySelectorAll(`[id^="${name}-opt-"]`).forEach(el => el.classList.remove('selected'));
+  const sel = document.getElementById(`${name}-opt-${idx}`);
+  if(sel) sel.classList.add('selected');
+  answers[`radio-${name}`] = { idx, correct: isCorrect };
+}
+
+function renderTagCloud(containerId, items, prefix) {
+  const c = document.getElementById(containerId);
+  if(!c) return;
+  c.innerHTML = '';
+  items.forEach((item, i) => {
+    const key = prefix + i;
+    const sel = answers[key] ? 'selected' : '';
+    c.innerHTML += `<div class="tag-item ${sel}" onclick="toggleTag('${key}',this)">${item}</div>`;
+  });
+}
+
+function toggleTag(key, el) {
+  el.classList.toggle('selected');
+  answers[key] = el.classList.contains('selected');
+}
+
+function toggleTalent(key, el) {
+  el.classList.toggle('selected');
+  answers['talent-'+key] = el.classList.contains('selected');
+}
+
+function renderDrempels(containerId, items, prefix) {
+  const c = document.getElementById(containerId);
+  if(!c) return;
+  c.innerHTML = '';
+  items.forEach((item, i) => {
+    const key = prefix + i;
+    const sel = answers[key] ? 'selected' : '';
+    c.innerHTML += `<div class="drempel-item ${sel}" onclick="toggleDrempel('${key}',this)">
+      <div class="drempel-cb">${answers[key]?'✅':'☐'}</div>
+      <div>${item}</div>
+    </div>`;
+  });
+}
+
+function toggleDrempel(key, el) {
+  el.classList.toggle('selected');
+  answers[key] = el.classList.contains('selected');
+  const cb = el.querySelector('.drempel-cb');
+  if(cb) cb.textContent = answers[key] ? '✅' : '☐';
+}
+
+function renderLikert(containerId, items, prefix) {
+  const c = document.getElementById(containerId);
+  if(!c) return;
+  c.innerHTML = '';
+  items.forEach((item, i) => {
+    const key = prefix + i;
+    const saved = answers[key]||0;
+    let btns = '';
+    for(let v=1;v<=5;v++) {
+      btns += `<div class="likert-btn ${saved==v?'active':''}" onclick="setLikert('${key}',${v},this.closest('.likert-scale').querySelectorAll('.likert-btn'))">${v}</div>`;
+    }
+    c.innerHTML += `<div class="likert-item">
+      <div class="likert-statement">${item}</div>
+      <div class="likert-scale">${btns}</div>
+      <div class="likert-nums"><span>1 – Helemaal niet</span><span>5 – Helemaal wel</span></div>
+    </div>`;
+  });
+}
+
+function setLikert(key, val, allBtns) {
+  allBtns.forEach((b,i) => b.classList.toggle('active', i+1===val));
+  answers[key] = val;
+}
+
+function updateScale(input, key, displayId) {
+  answers[key] = parseInt(input.value);
+  const d = document.getElementById(displayId);
+  if(d) d.textContent = input.value;
+}
+
+function saveText(input, key) {
+  answers[key] = input.value || (input.value !== undefined ? input.value : input);
+}
+
+// ─── CHECK FUNCTIONS ───
+function checkMotivatie() {
+  const r = answers['radio-mot-q'];
+  showFeedback('fb-motivatie-quiz', r && r.correct,
+    '✅ Juist! Motivatie geeft je zin om te starten én kracht om vol te houden.',
+    '❌ Probeer opnieuw. Denk aan wat motivatie doet: het helpt je starten én doorzetten.'
+  );
+  if(r) highlightOpts('mot-q', r);
+}
+
+function checkSarahTalent() {
+  const r = answers['radio-sarah-talent'];
+  showFeedback('fb-sarah-talent', r && r.correct,
+    '✅ Juist! Sarah heeft duidelijk sociale talenten: ze helpt, verbindt en zorgt voor anderen.',
+    '❌ Kijk nog eens naar de beschrijving van Sarah. Ze helpt mensen en brengt ze samen.'
+  );
+  if(r) highlightOpts('sarah-talent', r);
+}
+
+function checkModelMatch() {
+  const correct = window._modelAnswers || [];
+  let allCorrect = true;
+  correct.forEach((ans, i) => {
+    const sel = document.getElementById(`match-sel-${i}`);
+    const row = document.getElementById(`match-row-${i}`);
+    if(!sel || !row) return;
+    const isC = sel.value === ans;
+    row.classList.toggle('correct', isC);
+    row.classList.toggle('wrong', !isC && sel.value !== '');
+    if(!isC) allCorrect = false;
+  });
+  showFeedback('fb-model-match', allCorrect,
+    '✅ Uitstekend! Je hebt alle drempels correct gekoppeld aan het model.',
+    '❌ Nog niet helemaal. Bekijk de modellen opnieuw: Stress = blokkeren, Schaarste = tijdtekort, Uitsluiting = niet erbij horen.'
+  );
+}
+
+function checkStratDef() {
+  const r = answers['radio-strat-def'];
+  showFeedback('fb-strategie-def', r && r.correct,
+    '✅ Correct! Een strategie is een bewuste actie die jij kiest.',
+    '❌ Probeer het opnieuw. Een strategie is actief – je doet iets concreets.'
+  );
+  if(r) highlightOpts('strat-def', r);
+}
+
+function checkUitstel() {
+  const r = answers['radio-uitstel-s'];
+  showFeedback('fb-uitstel-strat', r && r.correct,
+    '✅ Juist! De 10-minutenregel is een krachtige strategie: je verlaagt de drempel om te starten.',
+    '❌ Kijk nog eens. De beste strategie maakt starten makkelijker, niet moeilijker.'
+  );
+  if(r) highlightOpts('uitstel-s', r);
+}
+
+function showFeedback(id, correct, okMsg, wrongMsg) {
+  const fb = document.getElementById(id);
+  if(!fb) return;
+  fb.textContent = correct ? okMsg : wrongMsg;
+  fb.className = 'feedback ' + (correct ? 'correct' : 'wrong') + ' show';
+}
+
+function highlightOpts(name, r) {
+  const correct = r.correct;
+  document.querySelectorAll(`[id^="${name}-opt-"]`).forEach((el, i) => {
+    if(el.id === `${name}-opt-${r.idx}`) {
+      el.classList.add(correct ? 'correct' : 'wrong');
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════
+const MODULE_COLORS = { 1:'m1', 2:'m2', 3:'m3', 4:'m4' };
+const MODULE_CSS = { 1:'var(--m1)', 2:'var(--m2)', 3:'var(--m3)', 4:'var(--m4)' };
+
+function startLeerpad() {
+  document.getElementById('screen-landing').style.display = 'none';
+  document.getElementById('main-header').classList.remove('hidden');
+  document.getElementById('screen-main').style.display = 'block';
+  renderStep();
+}
+
+function renderStep() {
+  const step = STEPS[currentStepIndex];
+  const color = MODULE_CSS[step.module];
+  const colorClass = MODULE_COLORS[step.module];
+
+  // Set CSS variable on main
+  document.getElementById('screen-main').className = colorClass;
+
+  // Update progress
+  const pct = Math.round(((currentStepIndex+1) / STEPS.length) * 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-label').textContent = `Stap ${currentStepIndex+1} van ${STEPS.length}`;
+
+  // Module header
+  const stepsInModule = STEPS.filter(s => s.module === step.module);
+  const stepInModule = stepsInModule.indexOf(step) + 1;
+  document.getElementById('module-header-wrap').innerHTML = `
+    <div class="module-header" style="--current-color:${color}">
+      <div class="module-header-icon">${step.moduleIcon}</div>
+      <div class="module-header-text">
+        <h2>${step.moduleTitle}</h2>
+        <p>${step.title}</p>
+      </div>
+      <div class="step-badge">Stap ${stepInModule} / ${stepsInModule.length}</div>
+    </div>`;
+
+  // Step dots (only within current module)
+  const dots = document.getElementById('step-dots');
+  dots.innerHTML = '';
+  stepsInModule.forEach((s, i) => {
+    const globalIdx = STEPS.indexOf(s);
+    let cls = '';
+    if(globalIdx === currentStepIndex) cls = 'active';
+    else if(globalIdx < currentStepIndex) cls = 'done';
+    dots.innerHTML += `<div class="step-dot ${cls}" style="${cls==='active'?'background:'+color:cls==='done'?'background:'+color+';opacity:0.4':''}"></div>`;
+  });
+
+  // Content
+  document.getElementById('step-content').style.setProperty('--current-color', color);
+  document.getElementById('step-content').innerHTML = step.render();
+  if(step.afterRender) step.afterRender();
+
+  // Buttons
+  document.getElementById('btn-back').style.display = currentStepIndex === 0 ? 'none' : 'block';
+  document.getElementById('btn-next').textContent = currentStepIndex === STEPS.length - 1 ? 'Afronden 🎉' : 'Volgende →';
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function goNext() {
+  if(currentStepIndex >= STEPS.length - 1) {
+    showCelebration();
+    return;
+  }
+  currentStepIndex++;
+  renderStep();
+}
+
+function goBack() {
+  if(currentStepIndex > 0) {
+    currentStepIndex--;
+    renderStep();
+  }
+}
+
+function showCelebration() {
+  document.getElementById('screen-main').style.display = 'none';
+  document.getElementById('main-header').classList.add('hidden');
+  const cel = document.getElementById('screen-celebration');
+  cel.style.display = 'flex';
+
+  // Build POP summary
+  const summary = document.getElementById('pop-summary-content');
+  summary.innerHTML = `
+    <h3>🌱 Jouw Persoonlijk OntwikkelPlan</h3>
+    <div class="pop-section">
+      <div class="pop-section-title">💪 Mijn motivatie</div>
+      <div class="pop-value">${answers['final-motivatie']||answers['mot-eigen']||'—'}</div>
+    </div>
+    <div class="pop-section">
+      <div class="pop-section-title">⚡ Mijn energiegevers</div>
+      <div class="pop-value">${answers['final-energie']||answers['energy-geeft']||'—'}</div>
+    </div>
+    <div class="pop-section">
+      <div class="pop-section-title">✨ Mijn talenten</div>
+      <div class="pop-value">${answers['final-talenten']||getTalenten()||'—'}</div>
+    </div>
+    <div class="pop-section">
+      <div class="pop-section-title">🧱 Mijn drempel</div>
+      <div class="pop-value">${answers['final-drempel']||answers['pop-situatie']||'—'}</div>
+    </div>
+    <div class="pop-section">
+      <div class="pop-section-title">🛠️ Mijn strategie</div>
+      <div class="pop-value">${answers['final-strat']||answers['pop-strat1']||'—'}</div>
+    </div>
+    <div class="pop-section">
+      <div class="pop-section-title">📅 Planning</div>
+      <div class="pop-value">${answers['final-timing']||((answers['pop-startdatum']||'')+(answers['pop-eval']?(' – Evaluatie: '+answers['pop-eval']):'')||'—')}</div>
+    </div>
+    <div class="pop-section">
+      <div class="pop-section-title">🌟 Wat ik over mezelf leerde</div>
+      <div class="pop-value">${answers['final-positief']||'—'}</div>
+    </div>
+  `;
+}
+
+function getTalenten() {
+  const talentNames = { sociaal:'Sociale talenten', organisatie:'Organisatietalenten', denk:'Denktalenten', creatief:'Creatieve talenten', doe:'Doetalenten', zelfsturend:'Zelfsturende talenten' };
+  return Object.entries(talentNames).filter(([k]) => answers['talent-'+k]).map(([k,v]) => v).join(', ') || null;
+}
+
+</script>
+</body>
+</html>
